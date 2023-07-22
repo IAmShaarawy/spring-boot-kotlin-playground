@@ -1,5 +1,8 @@
 package dev.shaarawy.todo.controller
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import dev.shaarawy.todo.model.Bank
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -10,16 +13,17 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
+import org.springframework.test.web.servlet.post
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class BankControllerTest {
-
-    @Autowired
-    lateinit var mockMvc: MockMvc
+class BankControllerTest @Autowired constructor(
+    val mockMvc: MockMvc,
+    val objectMapper: ObjectMapper
+) {
 
     @Nested
-    @DisplayName("Get All Bank")
+    @DisplayName("GET /api/banks")
 
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     inner class GetBanks {
@@ -38,7 +42,7 @@ class BankControllerTest {
     }
 
     @Nested
-    @DisplayName("Get Single Bank")
+    @DisplayName("GET /api/banks/{accountNumber}")
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     inner class GetBank {
         @Test
@@ -60,16 +64,89 @@ class BankControllerTest {
         }
 
         @Test
-        fun `should return NOT FOUND if the account number does not exist`(){
+        fun `should return NOT FOUND if the account number does not exist`() {
             // given
             val accountNumber = 12
 
             // when
             mockMvc.get("/api/banks/$accountNumber")
 
-            // then
+                // then
                 .andExpect { status { isNotFound() } }
 
+        }
+    }
+
+    @Nested
+    @DisplayName("POST /api/banks")
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    inner class PostNewBank {
+        private lateinit var newBank: Bank
+        lateinit var newBankJsonString: String
+
+        @BeforeAll
+        fun setup() {
+            newBank = Bank("acc123", 31.415, 2)
+            newBankJsonString = objectMapper.writeValueAsString(newBank)
+        }
+
+        @Test
+        fun `should add new bank`() {
+            // when
+            val performPost = mockMvc.post("/api/banks") {
+                contentType = MediaType.APPLICATION_JSON
+                content = newBankJsonString
+            }
+            // then
+            performPost.andExpect {
+                status { isCreated() }
+                content {
+                    json(newBankJsonString)
+                }
+            }
+
+        }
+
+        @Test
+        fun `should get the added bank with id`() {
+            // given
+            mockMvc.post("/api/banks") {
+                contentType = MediaType.APPLICATION_JSON
+                content = newBankJsonString
+            }
+
+            // when
+            val performGetAddedBank = mockMvc.get("/api/banks/${newBank.accountNumber}")
+
+            // then
+            performGetAddedBank.andExpect {
+                status { isOk() }
+                content { json(newBankJsonString) }
+            }
+
+        }
+        
+        @Test
+        fun `should return BAD REQUEST if account number already exits`(){
+            // given
+            mockMvc.post("/api/banks") {
+                contentType = MediaType.APPLICATION_JSON
+                content = newBankJsonString
+            }
+            
+            // when
+            val performPost = mockMvc.post("/api/banks") {
+                contentType = MediaType.APPLICATION_JSON
+                content = newBankJsonString
+            }
+
+            
+            // then
+            performPost.andExpect {
+                status { isBadRequest() }
+            }
+
+            
         }
     }
 }
