@@ -1,5 +1,6 @@
 package dev.shaarawy.todo.controller
 
+import dev.shaarawy.todo.Error
 import dev.shaarawy.todo.model.Bank
 import dev.shaarawy.todo.service.BankService
 import org.springframework.http.HttpStatus
@@ -15,8 +16,8 @@ import org.springframework.web.bind.annotation.RestController
 class BankController(private val bankService: BankService) {
 
     @ExceptionHandler(NoSuchElementException::class)// can be replaced by returning null from the end point method
-    fun handleNotFound(e: NoSuchElementException): ResponseEntity<String> =
-        ResponseEntity(e.message, HttpStatus.NOT_FOUND)
+    fun handleNotFound(e: NoSuchElementException): ResponseEntity<Error> =
+        ResponseEntity(Error(e), HttpStatus.NOT_FOUND)
 
     @GetMapping("/banks")
     fun getBanks(): Collection<Bank> = bankService.getBanks()
