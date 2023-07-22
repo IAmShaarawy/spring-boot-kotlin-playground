@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api")
 class BankController(private val bankService: BankService) {
 
-    @ExceptionHandler(NoSuchElementException::class)
+    @ExceptionHandler(NoSuchElementException::class)// can be replaced by returning null from the end point method
     fun handleNotFound(e: NoSuchElementException): ResponseEntity<String> =
         ResponseEntity(e.message, HttpStatus.NOT_FOUND)
 
