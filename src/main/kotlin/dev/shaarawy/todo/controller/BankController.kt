@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -21,5 +22,5 @@ class BankController(private val bankService: BankService) {
     fun getBanks(): Collection<Bank> = bankService.getBanks()
 
     @GetMapping("/banks/{accountNumber}")
-    fun getBank( accountNumber: String): Bank = bankService.getBank(accountNumber)
+    fun getBank(@PathVariable accountNumber: String): Bank = bankService.getBank(accountNumber)
 }
