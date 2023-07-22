@@ -1,6 +1,9 @@
 package dev.shaarawy.todo.controller
 
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
@@ -15,10 +18,15 @@ class BankControllerTest {
     @Autowired
     lateinit var mockMvc: MockMvc
 
-    @Test
-    fun `should return all banks`() {
-        // given / when
-        mockMvc.get("/api/banks")
+    @Nested
+    @DisplayName("Get All Bank")
+
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    inner class GetBanks {
+        @Test
+        fun `should return all banks`() {
+            // given / when
+            mockMvc.get("/api/banks")
                 .andDo { log() }
                 // then
                 .andExpect {
@@ -26,15 +34,20 @@ class BankControllerTest {
                     content { contentType(MediaType.APPLICATION_JSON) }
                     jsonPath("$[0].accountNumber") { value("1") }
                 }
+        }
     }
 
-    @Test
-    fun `should return the bank with the given account number`() {
-        // given
-        val accountNumber = "1"
+    @Nested
+    @DisplayName("Get Single Bank")
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    inner class GetBank {
+        @Test
+        fun `should return the bank with the given account number`() {
+            // given
+            val accountNumber = "1"
 
-        // when
-        mockMvc.get("/api/banks/$accountNumber")
+            // when
+            mockMvc.get("/api/banks/$accountNumber")
                 // then
                 .andExpect {
                     status { isOk() }
@@ -44,5 +57,6 @@ class BankControllerTest {
                 }
 
 
+        }
     }
 }
